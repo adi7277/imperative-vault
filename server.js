@@ -12,19 +12,21 @@ const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || '4a2f8c9b1d7e3a5f60b8c4d2e1a3f5b7c9d0e2a4f6b8c1d3e5f7a9b0c2d4e6f8';
 
 // MySQL Connection Pool
+const isCloudDB = process.env.DB_HOST && !['127.0.0.1', 'localhost'].includes(process.env.DB_HOST);
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST || '127.0.0.1',
-  port: Number(process.env.DB_PORT) || 3306,
+  port: Number(process.env.DB_PORT) || 4000,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'test',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  // TiDB Cloud requires TLS/SSL:
-  ssl: process.env.DB_HOST && process.env.DB_HOST !== '127.0.0.1' && process.env.DB_HOST !== 'localhost'
-    ? { minVersion: 'TLSv1.2', rejectUnauthorized: true }
-    : false
+  ssl: isCloudDB ? {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true
+  } : undefined
 });
 
 // Auto-migrate schema
