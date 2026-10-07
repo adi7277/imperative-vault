@@ -1,0 +1,64 @@
+CREATE DATABASE IF NOT EXISTS vault_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'vault_admin'@'localhost' IDENTIFIED BY 'admin';
+GRANT ALL PRIVILEGES ON vault_db.* TO 'vault_admin'@'localhost';
+FLUSH PRIVILEGES;
+
+USE vault_db;
+
+CREATE TABLE IF NOT EXISTS users (
+  id CHAR(36) PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  role ENUM('admin', 'member') NOT NULL DEFAULT 'member',
+  public_key TEXT NOT NULL,
+  encrypted_private_key TEXT NOT NULL,
+  private_key_iv VARCHAR(32) NOT NULL,
+  auth_hash VARCHAR(255) NOT NULL,
+  salt VARCHAR(64) NOT NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS folders (
+  id CHAR(36) PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  parent_id CHAR(36) NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (parent_id) REFERENCES folders(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS vault_items (
+  id CHAR(36) PRIMARY KEY,
+  folder_id CHAR(36) NULL,
+  title VARCHAR(255) NOT NULL,
+  item_type VARCHAR(64) NOT NULL,
+  encrypted_payload LONGTEXT NOT NULL,
+  iv VARCHAR(32) NOT NULL,
+  auth_tag VARCHAR(32) NOT NULL,
+  created_by CHAR(36) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL,
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS item_access (
+  id CHAR(36) PRIMARY KEY,
+  vault_item_id CHAR(36) NOT NULL,
+  user_id CHAR(36) NOT NULL,
+  encrypted_dek TEXT NOT NULL,
+  permission ENUM('read', 'write', 'admin') NOT NULL DEFAULT 'read',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (vault_item_id) REFERENCES vault_items(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id CHAR(36) PRIMARY KEY,
+  user_id CHAR(36) NULL,
+  action VARCHAR(50) NOT NULL,
+  item_id CHAR(36) NULL,
+  details JSON NULL,
+  timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

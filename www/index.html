@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imperative Business Ventures - Infrastructure Credential Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+  </style>
+</head>
+<body class="h-full text-slate-200 antialiased flex flex-col selection:bg-rose-500/30 selection:text-rose-200">
+
+  <!-- FLOATING NOTIFICATION TOAST -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- HIDDEN CSV IMPORT FILE INPUT -->
+  <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="handleCsvFileSelected(event)" />
+
+  <!-- TOP ENTERPRISE HEADER -->
+  <header class="border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-md px-6 py-3 sticky top-0 z-30 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="bg-white px-2.5 py-1 rounded-xl shadow-md border border-slate-700/50 flex items-center justify-center">
+        <img src="imperative logo.webp" alt="Imperative Business Ventures" class="h-8 md:h-9 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/180x45/white/111827?text=Imperative';" />
+      </div>
+      <div class="hidden sm:block">
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm font-bold tracking-tight text-white">Imperative Business Ventures</h1>
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            Internal Portal
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-400 font-medium">IT Infrastructure & Asset Credential Management</p>
+      </div>
+    </div>
+
+    <!-- Active User Info & Sign Out -->
+    <div id="userHeader" class="hidden items-center gap-4">
+      <div class="flex items-center gap-3 pr-3 border-r border-slate-800">
+        <div class="h-8 w-8 rounded-lg bg-rose-950/50 border border-rose-800/50 flex items-center justify-center text-xs font-bold text-rose-400 shadow-sm">
+          <span id="userInitial">U</span>
+        </div>
+        <div class="text-left">
+          <div id="displayUsername" class="text-xs font-semibold text-slate-100"></div>
+          <div id="displayRole" class="text-[10px] text-rose-400 font-mono font-medium tracking-wide"></div>
+        </div>
+      </div>
+      <button id="logoutBtn" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs px-3.5 py-2 rounded-xl border border-slate-700/80 transition shadow-sm font-medium">
+        Sign Out
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col justify-center">
+
+    <!-- 1. LOGIN PORTAL VIEW -->
+    <div id="loginView" class="max-w-md w-full mx-auto bg-slate-900/90 border border-slate-800 p-8 rounded-3xl shadow-2xl backdrop-blur-xl relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-36 h-36 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="mb-6 text-center flex flex-col items-center">
+        <div class="bg-white p-3 rounded-2xl shadow-xl border border-slate-700/40 mb-4 inline-block">
+          <img src="imperative logo.webp" alt="Imperative Business Ventures" class="h-11 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/200x50/white/111827?text=Imperative';" />
+        </div>
+        <h2 class="text-base font-bold text-white tracking-tight">Infrastructure Portal Sign In</h2>
+        <p class="text-xs text-slate-400 mt-1">Enter your corporate credentials to access assets.</p>
+      </div>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Corporate Username</label>
+          <input id="usernameInput" type="text" required value="admin"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Portal Password</label>
+          <input id="passwordInput" type="password" required placeholder="••••••••••••"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition" />
+        </div>
+        <div id="loginError" class="hidden text-xs text-rose-400 bg-rose-950/40 border border-rose-900/50 p-3 rounded-xl font-medium"></div>
+        <button type="submit" id="loginBtn"
+          class="w-full bg-rose-600 hover:bg-rose-500 text-white font-semibold py-2.5 rounded-xl text-xs transition duration-150 flex items-center justify-center gap-2 shadow-lg shadow-rose-600/25">
+          Sign In to Portal
+        </button>
+      </form>
+    </div>
+
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="dashboardView" class="hidden flex-1 flex-col space-y-5">
+
+      <!-- EXECUTIVE METRICS STRIP -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Managed Assets</div>
+          <div id="statTotalItems" class="text-xl font-bold text-white font-mono mt-1">0</div>
+        </div>
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Branch Offices</div>
+          <div id="statTotalLocations" class="text-xl font-bold text-white font-mono mt-1">0</div>
+        </div>
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Asset Categories</div>
+          <div id="statTotalTypes" class="text-xl font-bold text-white font-mono mt-1">0</div>
+        </div>
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 shadow-sm">
+          <div class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Activity Tracking</div>
+          <div class="text-xs font-semibold text-emerald-400 font-mono mt-2 flex items-center gap-1.5">
+            <span class="h-2 w-2 rounded-full bg-emerald-400"></span> Active Audit Trail
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN TABS & ACTION BUTTONS -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+        <div class="flex items-center gap-1.5 p-1 bg-slate-900/80 border border-slate-800 rounded-xl w-fit">
+          <button id="tabVaultBtn" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-rose-600 text-white shadow-sm transition">
+            Infrastructure Assets
+          </button>
+          <button id="tabLogsBtn" class="hidden px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            Activity & Audit Logs
+          </button>
+          <button id="tabUsersBtn" class="hidden px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition">
+            Organization Members
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="exportCredentialsToCsv()" class="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-700/80 transition flex items-center gap-1.5 shadow-sm" title="Export current credentials inventory to CSV">
+            📤 Export CSV
+          </button>
+          <button onclick="triggerCsvImport()" class="hidden bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-semibold px-3 py-2 rounded-xl border border-slate-700/80 transition items-center gap-1.5 shadow-sm" id="importCsvBtn" title="Bulk import credentials from CSV file">
+            📥 Import CSV
+          </button>
+          <button id="syncAllBtn" onclick="syncVaultToAllUsers(false)" class="hidden bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold px-3 py-2 rounded-xl transition items-center gap-1.5 shadow-sm">
+            ⚡ Sync to Members
+          </button>
+          <button id="openNewItemModalBtn" class="hidden bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition items-center gap-1.5 shadow-md shadow-rose-600/20">
+            ➕ Add Asset
+          </button>
+          <button id="openNewUserModalBtn" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition items-center gap-1.5 shadow-md shadow-emerald-600/20">
+            👤 New Member
+          </button>
+          <button id="refreshBtn" class="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white text-xs px-3 py-2 rounded-xl border border-slate-800 transition font-medium flex items-center gap-1.5">
+            🔄 Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION 1: ASSETS TABLE -->
+      <section id="vaultSection" class="space-y-4">
+        <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800/80 shadow-sm">
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0" id="locationPillsContainer"></div>
+          <div class="relative min-w-[280px] lg:w-80">
+            <input id="searchInput" type="text" placeholder="Search target, system IP, username, type..."
+              class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-8 pr-8 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-rose-500 transition" />
+            <span class="absolute left-2.5 top-2 text-slate-500 text-xs">🔍</span>
+            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-2 text-slate-400 hover:text-white text-xs">✕</button>
+          </div>
+        </div>
+
+        <div class="border border-slate-800/80 rounded-2xl overflow-hidden bg-slate-900/40 shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="px-4 py-3.5">Branch Location</th>
+                  <th class="px-4 py-3.5">Device Type</th>
+                  <th class="px-4 py-3.5">Target Asset</th>
+                  <th class="px-4 py-3.5">Account / Username</th>
+                  <th class="px-4 py-3.5">Password</th>
+                  <th class="px-4 py-3.5">Shared With</th>
+                  <th class="px-4 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="itemsTableBody" class="divide-y divide-slate-800/60 font-medium"></tbody>
+            </table>
+          </div>
+          <div id="emptyVaultState" class="hidden text-center py-14 text-slate-500">
+            <p class="text-xs text-slate-400 font-medium">No assets matching your selected location or query.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: ACTIVITY & AUDIT LOGS (ADMIN ONLY) -->
+      <section id="logsSection" class="hidden space-y-4">
+        <div class="flex items-center justify-between gap-3 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800/80 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-slate-300">Action Filter:</span>
+            <select id="logActionFilter" onchange="renderAuditLogs()" class="bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1 text-xs text-white focus:outline-none">
+              <option value="ALL">All Recorded Actions</option>
+              <option value="PASSWORD_SHARED">Password Shared Records</option>
+              <option value="SHARED_USER">Shared User Edits & Deletions</option>
+              <option value="CSV">CSV Imports & Exports</option>
+              <option value="CREDENTIAL">Asset Created / Updated</option>
+              <option value="SECRET">Password Views & Copies</option>
+              <option value="AUTH">Sign In Events</option>
+            </select>
+          </div>
+          <button onclick="exportLogsToCsv()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+            📥 Export Audit CSV
+          </button>
+        </div>
+
+        <div class="border border-slate-800/80 rounded-2xl overflow-hidden bg-slate-900/40 shadow-xl">
+          <div class="overflow-x-auto max-h-[500px]">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-800 sticky top-0 z-10">
+                <tr>
+                  <th class="px-4 py-3.5">Timestamp</th>
+                  <th class="px-4 py-3.5">Action Event</th>
+                  <th class="px-4 py-3.5">Operator</th>
+                  <th class="px-4 py-3.5">Target Asset</th>
+                  <th class="px-4 py-3.5">System IP & Event Details</th>
+                  <th class="px-4 py-3.5 text-right">Operator IP</th>
+                </tr>
+              </thead>
+              <tbody id="logsTableBody" class="divide-y divide-slate-800/60 font-medium"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: MEMBERS & ACCESS MANAGEMENT (ADMIN ONLY) -->
+      <section id="usersSection" class="hidden space-y-4">
+        <div class="border border-slate-800/80 rounded-2xl overflow-hidden bg-slate-900/40 shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs whitespace-nowrap">
+              <thead class="bg-slate-950/80 text-[11px] uppercase tracking-wider text-slate-400 font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="px-4 py-3.5">Member</th>
+                  <th class="px-4 py-3.5">Corporate Email</th>
+                  <th class="px-4 py-3.5">Role</th>
+                  <th class="px-4 py-3.5">Access Status</th>
+                  <th class="px-4 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody" class="divide-y divide-slate-800/60 font-medium"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- MODAL: ADD / EDIT CREDENTIAL -->
+  <div id="itemModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 relative">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 id="itemModalTitle" class="text-sm font-bold text-white tracking-tight">Add Infrastructure Asset</h3>
+        <button onclick="closeModal('itemModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+      
+      <form id="itemForm" class="space-y-3.5">
+        <input type="hidden" id="editItemTargetId" />
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-medium text-slate-300">Branch Location</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="promptAddNewLocation()" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold">➕ Add</button>
+                <button type="button" onclick="deleteCurrentLocation()" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold">🗑️ Del</button>
+              </div>
+            </div>
+            <select id="itemLocationInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"></select>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-medium text-slate-300">Device Type</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="promptAddNewType()" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold">➕ Add</button>
+                <button type="button" onclick="deleteCurrentType()" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold">🗑️ Del</button>
+              </div>
+            </div>
+            <select id="itemTypeInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"></select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Target Asset Name</label>
+          <input id="itemTitleInput" type="text" required placeholder="HO CCTV NVR or Core Switch"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-rose-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">System IP Address / Host / URL</label>
+          <input id="itemNotesInput" type="text" required placeholder="e.g. 192.168.1.100 or 10.0.4.15"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Account Identifier / Username</label>
+          <input id="itemUserInput" type="text" required placeholder="admin / operator"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-rose-500" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Password / Passphrase</label>
+          <textarea id="itemSecretInput" required rows="3" placeholder="Enter sensitive password or key..."
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-emerald-400 font-mono focus:outline-none focus:border-rose-500"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('itemModal')" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-xl text-slate-300 font-medium">Cancel</button>
+          <button type="submit" id="saveItemBtn" class="bg-rose-600 hover:bg-rose-500 text-xs font-semibold px-4 py-2 rounded-xl text-white shadow-lg shadow-rose-600/20">
+            Save Asset
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SHARE PASSWORD WITH PERSON -->
+  <div id="sharePasswordModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight">Share Credential with Person</h3>
+          <p id="shareModalItemTitle" class="text-xs text-rose-400 font-medium mt-0.5"></p>
+        </div>
+        <button onclick="closeModal('sharePasswordModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+
+      <form id="sharePasswordForm" class="space-y-3.5">
+        <input type="hidden" id="shareTargetItemId" />
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Recipient Name / User</label>
+          <input id="recipientNameInput" type="text" required placeholder="e.g. Rajesh Sharma, Site Engineer"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Department / Vendor</label>
+            <input id="recipientDeptInput" type="text" placeholder="e.g. IT Support, Network"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Phone / WhatsApp</label>
+            <input id="recipientPhoneInput" type="text" placeholder="+91 9876543210"
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 font-mono" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Access Duration</label>
+            <select id="shareTimeSpanInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
+              <option value="Permanent">Permanent</option>
+              <option value="1_hour">1 Hour</option>
+              <option value="4_hours">4 Hours</option>
+              <option value="8_hours">8 Hours (Shift)</option>
+              <option value="24_hours">24 Hours (1 Day)</option>
+              <option value="7_days">7 Days</option>
+              <option value="30_days">30 Days</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Sharing Channel</label>
+            <select id="shareChannelInput" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Internal Handover">Direct Handover</option>
+              <option value="Email">Corporate Email</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('sharePasswordModal')" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-xl text-slate-300 font-medium">Cancel</button>
+          <button type="submit" id="confirmShareBtn" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold px-4 py-2 rounded-xl text-white shadow-lg shadow-emerald-600/20 flex items-center gap-1.5">
+            <span>💬 Confirm & Share</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW / MANAGE SHARED USERS FOR AN ASSET -->
+  <div id="viewSharesModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight">Shared Users & Recipient Approvals</h3>
+          <p id="viewSharesItemTitle" class="text-xs text-rose-400 font-medium mt-0.5"></p>
+        </div>
+        <button onclick="closeModal('viewSharesModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+
+      <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/50">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs whitespace-nowrap">
+            <thead class="bg-slate-900 text-[10px] uppercase font-semibold text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="px-3.5 py-2.5">Shared User</th>
+                <th class="px-3.5 py-2.5">Department / Contact</th>
+                <th class="px-3.5 py-2.5">Duration / Window</th>
+                <th class="px-3.5 py-2.5">Channel</th>
+                <th class="px-3.5 py-2.5">Shared By</th>
+                <th class="px-3.5 py-2.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="viewSharesTableBody" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-800">
+        <button onclick="closeModal('viewSharesModal')" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-xl text-slate-300 font-medium">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT SHARED PASSWORD'S USER -->
+  <div id="editSharePersonModal" class="hidden fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div>
+          <h4 class="text-sm font-bold text-white tracking-tight">Edit Shared Password's User</h4>
+          <p class="text-[11px] text-slate-400 mt-0.5">Modify recipient details, duration approval, or contact.</p>
+        </div>
+        <button onclick="closeModal('editSharePersonModal')" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <form id="editSharePersonForm" class="space-y-3.5">
+        <input type="hidden" id="editShareRecordId" />
+        <input type="hidden" id="editShareItemId" />
+
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Shared User / Recipient Name</label>
+          <input id="editShareRecipientName" type="text" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Department / Vendor</label>
+            <input id="editShareDept" type="text" placeholder="e.g. IT Operations" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Phone / WhatsApp</label>
+            <input id="editSharePhone" type="text" placeholder="+91 9876543210" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Access Duration</label>
+            <select id="editShareTimeSpan" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
+              <option value="Permanent">Permanent</option>
+              <option value="1_hour">1 Hour</option>
+              <option value="4_hours">4 Hours</option>
+              <option value="8_hours">8 Hours (Shift)</option>
+              <option value="24_hours">24 Hours (1 Day)</option>
+              <option value="7_days">7 Days</option>
+              <option value="30_days">30 Days</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Sharing Channel</label>
+            <select id="editShareChannel" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Internal Handover">Direct Handover</option>
+              <option value="Email">Corporate Email</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('editSharePersonModal')" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-xl text-slate-300 font-medium">Cancel</button>
+          <button type="submit" id="saveEditShareBtn" class="bg-rose-600 hover:bg-rose-500 text-xs font-semibold px-4 py-2 rounded-xl text-white shadow-lg shadow-rose-600/20">
+            Save Shared User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CSV IMPORT PREVIEW & TEMPLATE -->
+  <div id="csvImportModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white tracking-tight">Bulk Import Credentials via CSV</h3>
+        <button onclick="closeModal('csvImportModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-300">
+        <p>Ensure your CSV file contains these headers in order:</p>
+        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 font-mono text-[11px] text-emerald-400 select-all overflow-x-auto">
+          Asset Name,Location,Type,Host_IP,Username,Password
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <button onclick="downloadSampleCsv()" class="text-rose-400 hover:text-rose-300 font-semibold underline text-xs">
+            📄 Download Sample CSV Template
+          </button>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+        <button onclick="closeModal('csvImportModal')" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-xl text-slate-300 font-medium">Cancel</button>
+        <button onclick="document.getElementById('csvFileInput').click()" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs px-4 py-2 rounded-xl shadow-lg shadow-rose-600/25">
+          Select CSV File
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD USER -->
+  <div id="userModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white tracking-tight">Provision New Organization Member</h3>
+        <button onclick="closeModal('userModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+      <form id="addUserForm" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Corporate Username</label>
+          <input id="newUsername" type="text" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-rose-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Corporate Email Address</label>
+          <input id="newUserEmail" type="email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-rose-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Temporary Initial Password</label>
+          <input id="newUserPassword" type="password" required placeholder="Minimum 12 characters"
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-rose-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Access Role</label>
+          <select id="newUserRole" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
+            <option value="member">Member (Read-Only to Assigned Assets)</option>
+            <option value="admin">Administrator (Full Control & Approvals)</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('userModal')" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-xl text-slate-300 font-medium">Cancel</button>
+          <button type="submit" id="saveUserBtn" class="bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold px-4 py-2 rounded-xl text-white shadow-lg shadow-emerald-600/20">
+            Create Member
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT USER -->
+  <div id="editUserModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-bold text-white tracking-tight">Edit Member Status</h3>
+        <button onclick="closeModal('editUserModal')" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+      <form id="editUserForm" class="space-y-3.5">
+        <input type="hidden" id="editUserId" />
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Role</label>
+          <select id="editUserRole" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
+            <option value="member">Member (Read-Only)</option>
+            <option value="admin">Administrator (Full Access)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-300 mb-1">Account State</label>
+          <select id="editUserStatus" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500">
+            <option value="1">Active</option>
+            <option value="0">Locked / Revoked</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeModal('editUserModal')" class="bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-xl text-slate-300 font-medium">Cancel</button>
+          <button type="submit" class="bg-rose-600 hover:bg-rose-500 text-xs font-semibold px-4 py-2 rounded-xl text-white">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    const API_BASE = (window.location.origin && window.location.origin !== 'null' && !window.location.protocol.startsWith('file'))
+      ? window.location.origin + '/api/v1'
+      : 'http://localhost:3000/api/v1';
+
+    let sessionToken = null;
+    let currentUser = null;
+    let userPrivateKey = null;
+
+    let rawDecryptedItems = [];
+    let decryptedCache = {};
+    let cachedAuditLogs = [];
+    let activeLocationFilter = 'ALL';
+    let searchQuery = '';
+
+    let availableLocations = JSON.parse(localStorage.getItem('vault_custom_locations') || '["Pune", "Thane", "Vashi", "Chennai"]');
+    let availableTypes = JSON.parse(localStorage.getItem('vault_custom_types') || '["Router", "Firewall", "Server", "Switch", "CCTV NVR", "Wi-Fi Enterprise", "Workstation"]');
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const isSuccess = type === 'success';
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl border text-xs font-medium shadow-2xl transition-all duration-300 transform translate-y-2 opacity-0 ${
+        isSuccess 
+          ? 'bg-slate-900 border-emerald-500/30 text-emerald-300 shadow-emerald-950/20' 
+          : 'bg-slate-900 border-rose-500/30 text-rose-300 shadow-rose-950/20'
+      }`;
+      toast.innerHTML = `<span class="h-2 w-2 rounded-full ${isSuccess ? 'bg-emerald-400' : 'bg-rose-400'}"></span><span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 3200);
+      }, 3200);
+    }
+
+    // Cryptography Helpers
+    function bufToHex(b) { return Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join(''); }
+    function hexToBytes(h) { const b = new Uint8Array(h.length/2); for(let i=0; i<h.length; i+=2) b[i/2]=parseInt(h.substr(i,2),16); return b; }
+    function bufToBase64(b) { let s=''; const u=new Uint8Array(b); for(let i=0; i<u.length; i++) s+=String.fromCharCode(u[i]); return btoa(s); }
+    function base64ToBytes(s) { const b=atob(s); return Uint8Array.from(b, m => m.codePointAt(0)); }
+    function pemToArrayBuffer(p) { return base64ToBytes(p.replace(/-----BEGIN [A-Z ]+-----/,'').replace(/-----END [A-Z ]+-----/,'').replace(/\s+/g,'')).buffer; }
+    function arrayBufferToPem(b, l) { return `-----BEGIN ${l}-----\n${bufToBase64(b).match(/.{1,64}/g).join('\n')}\n-----END ${l}-----`; }
+
+    async function deriveAesGcmKey(password, saltBytes) {
+      const enc = new TextEncoder();
+      const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    async function decryptPrivateKeyPayload(encPayload, ivHex, saltHex, masterPassword) {
+      const salt = hexToBytes(saltHex);
+      const iv = hexToBytes(ivHex);
+      const [cipherB64, tagB64] = encPayload.split(':');
+      const cipherBytes = base64ToBytes(cipherB64);
+      const tagBytes = base64ToBytes(tagB64);
+      const combined = new Uint8Array(cipherBytes.length + tagBytes.length);
+      combined.set(cipherBytes, 0);
+      combined.set(tagBytes, cipherBytes.length);
+
+      const aesKey = await deriveAesGcmKey(masterPassword, salt);
+      const decryptedBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, aesKey, combined);
+      return new TextDecoder().decode(decryptedBuf);
+    }
+
+    // Dynamic Pickers
+    function renderLocationDropdown(selectedVal = null) {
+      const select = document.getElementById('itemLocationInput');
+      select.innerHTML = '';
+      availableLocations.forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc;
+        opt.innerText = loc;
+        if (selectedVal && selectedVal.toLowerCase() === loc.toLowerCase()) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function promptAddNewLocation() {
+      const newLoc = prompt('Enter new Branch Location (e.g., Bengaluru, Hyderabad):');
+      if (newLoc && newLoc.trim()) {
+        const trimmed = newLoc.trim();
+        if (!availableLocations.some(l => l.toLowerCase() === trimmed.toLowerCase())) {
+          availableLocations.push(trimmed);
+          localStorage.setItem('vault_custom_locations', JSON.stringify(availableLocations));
+          showToast(`Location "${trimmed}" added`);
+        }
+        renderLocationDropdown(trimmed);
+        renderTableAndCounts();
+      }
+    }
+
+    function deleteCurrentLocation() {
+      const select = document.getElementById('itemLocationInput');
+      const currentLoc = select.value;
+      if (!currentLoc) return;
+      if (availableLocations.length <= 1) return showToast('At least one location required', 'error');
+      if (!confirm(`Remove "${currentLoc}" from choices?`)) return;
+
+      availableLocations = availableLocations.filter(l => l.toLowerCase() !== currentLoc.toLowerCase());
+      localStorage.setItem('vault_custom_locations', JSON.stringify(availableLocations));
+      if (activeLocationFilter.toLowerCase() === currentLoc.toLowerCase()) activeLocationFilter = 'ALL';
+      renderLocationDropdown();
+      renderTableAndCounts();
+      showToast(`Location "${currentLoc}" removed`);
+    }
+
+    function renderTypeDropdown(selectedVal = null) {
+      const select = document.getElementById('itemTypeInput');
+      select.innerHTML = '';
+      availableTypes.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.innerText = t;
+        if (selectedVal && selectedVal.toLowerCase() === t.toLowerCase()) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+
+    function promptAddNewType() {
+      const newType = prompt('Enter new Device Type (e.g., CCTV NVR, NAS, Router):');
+      if (newType && newType.trim()) {
+        const trimmed = newType.trim();
+        if (!availableTypes.some(t => t.toLowerCase() === trimmed.toLowerCase())) {
+          availableTypes.push(trimmed);
+          localStorage.setItem('vault_custom_types', JSON.stringify(availableTypes));
+          showToast(`Type "${trimmed}" added`);
+        }
+        renderTypeDropdown(trimmed);
+        renderTableAndCounts();
+      }
+    }
+
+    function deleteCurrentType() {
+      const select = document.getElementById('itemTypeInput');
+      const currentType = select.value;
+      if (!currentType) return;
+      if (availableTypes.length <= 1) return showToast('At least one device type required', 'error');
+      if (!confirm(`Remove type "${currentType}"?`)) return;
+      availableTypes = availableTypes.filter(t => t.toLowerCase() !== currentType.toLowerCase());
+      localStorage.setItem('vault_custom_types', JSON.stringify(availableTypes));
+      renderTypeDropdown();
+      renderTableAndCounts();
+      showToast(`Type "${currentType}" removed`);
+    }
+
+    // Portal Authentication
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('loginError');
+      errBox.classList.add('hidden');
+      const btn = document.getElementById('loginBtn');
+      btn.innerText = 'Authenticating session...';
+      btn.disabled = true;
+
+      const username = document.getElementById('usernameInput').value;
+      const masterPassword = document.getElementById('passwordInput').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, master_password: masterPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Authentication failed');
+
+        sessionToken = data.token;
+        currentUser = data.user;
+
+        const privateKeyPem = await decryptPrivateKeyPayload(
+          currentUser.encrypted_private_key,
+          currentUser.private_key_iv,
+          currentUser.salt,
+          masterPassword
+        );
+
+        userPrivateKey = await crypto.subtle.importKey(
+          'pkcs8',
+          pemToArrayBuffer(privateKeyPem),
+          { name: 'RSA-OAEP', hash: 'SHA-256' },
+          false,
+          ['decrypt']
+        );
+
+        document.getElementById('loginView').classList.add('hidden');
+        document.getElementById('userHeader').classList.remove('hidden');
+        document.getElementById('userHeader').classList.add('flex');
+        document.getElementById('dashboardView').classList.remove('hidden');
+        document.getElementById('dashboardView').classList.add('flex');
+        
+        document.getElementById('displayUsername').innerText = currentUser.username;
+        document.getElementById('userInitial').innerText = currentUser.username.charAt(0).toUpperCase();
+        document.getElementById('displayRole').innerText = currentUser.role === 'admin' ? 'ADMINISTRATOR' : 'MEMBER';
+
+        renderLocationDropdown();
+        renderTypeDropdown();
+
+        if (currentUser.role === 'admin') {
+          document.getElementById('tabLogsBtn').classList.remove('hidden');
+          document.getElementById('tabUsersBtn').classList.remove('hidden');
+          document.getElementById('openNewItemModalBtn').classList.remove('hidden');
+          document.getElementById('openNewItemModalBtn').classList.add('inline-flex');
+          document.getElementById('openNewUserModalBtn').classList.remove('hidden');
+          document.getElementById('openNewUserModalBtn').classList.add('inline-flex');
+          document.getElementById('importCsvBtn').classList.remove('hidden');
+          document.getElementById('importCsvBtn').classList.add('inline-flex');
+          document.getElementById('syncAllBtn').classList.remove('hidden');
+          document.getElementById('syncAllBtn').classList.add('inline-flex');
+        }
+
+        showToast(`Welcome back, ${currentUser.username}!`);
+        await loadVaultItems();
+      } catch (err) {
+        errBox.innerText = err.message;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.innerText = 'Sign In to Portal';
+        btn.disabled = false;
+      }
+    });
+
+    // Vault Data Fetch & Decryption
+    async function loadVaultItems() {
+      rawDecryptedItems = [];
+      decryptedCache = {};
+
+      try {
+        const res = await fetch(`${API_BASE}/vault/items`, {
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        const { items } = await res.json();
+
+        if (items && items.length > 0) {
+          for (const item of items) {
+            let decryptedData = { username: '—', secret: 'Error', notes: '' };
+            let rawDekBytes = null;
+
+            try {
+              rawDekBytes = await crypto.subtle.decrypt(
+                { name: 'RSA-OAEP' },
+                userPrivateKey,
+                base64ToBytes(item.encrypted_dek)
+              );
+              const dekKey = await crypto.subtle.importKey('raw', rawDekBytes, { name: 'AES-GCM' }, false, ['decrypt']);
+
+              const cipherBytes = base64ToBytes(item.encrypted_payload);
+              const tagBytes = hexToBytes(item.auth_tag);
+              const combined = new Uint8Array(cipherBytes.length + tagBytes.length);
+              combined.set(cipherBytes, 0);
+              combined.set(tagBytes, cipherBytes.length);
+
+              const decBuf = await crypto.subtle.decrypt(
+                { name: 'AES-GCM', iv: hexToBytes(item.iv) },
+                dekKey,
+                combined
+              );
+              decryptedData = JSON.parse(new TextDecoder().decode(decBuf));
+
+              decryptedCache[item.id] = {
+                title: item.title,
+                item_type: item.item_type,
+                location: item.location || 'Pune',
+                username: decryptedData.username,
+                secret: decryptedData.secret,
+                notes: decryptedData.notes,
+                rawDekBytes: rawDekBytes
+              };
+            } catch (e) {
+              console.error('Decryption failed for item:', item.id, e);
+            }
+
+            const resolvedLocation = item.location || 'Pune';
+            const resolvedType = item.item_type || 'General';
+
+            if (!availableLocations.some(l => l.toLowerCase() === resolvedLocation.toLowerCase())) {
+              availableLocations.push(resolvedLocation);
+              localStorage.setItem('vault_custom_locations', JSON.stringify(availableLocations));
+            }
+            if (!availableTypes.some(t => t.toLowerCase() === resolvedType.toLowerCase())) {
+              availableTypes.push(resolvedType);
+              localStorage.setItem('vault_custom_types', JSON.stringify(availableTypes));
+            }
+
+            rawDecryptedItems.push({
+              id: item.id,
+              title: item.title,
+              location: resolvedLocation,
+              item_type: resolvedType,
+              username: decryptedData.username || '—',
+              secret: decryptedData.secret || '',
+              notes: decryptedData.notes || '',
+              permission: item.permission,
+              recipient_count: item.recipient_count || 0
+            });
+          }
+        }
+
+        renderLocationDropdown();
+        renderTypeDropdown();
+        renderTableAndCounts();
+
+        if (currentUser.role === 'admin') syncVaultToAllUsers(true);
+      } catch (err) {
+        showToast('Error loading credentials: ' + err.message, 'error');
+      }
+    }
+
+    // Filter & Search Table
+    function setLocationFilter(loc) {
+      activeLocationFilter = loc;
+      renderTableAndCounts();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      searchQuery = e.target.value.toLowerCase().trim();
+      const clearBtn = document.getElementById('clearSearchBtn');
+      if (searchQuery.length > 0) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+      renderTableAndCounts();
+    });
+
+    function clearSearch() {
+      document.getElementById('searchInput').value = '';
+      searchQuery = '';
+      document.getElementById('clearSearchBtn').classList.add('hidden');
+      renderTableAndCounts();
+    }
+
+    function renderTableAndCounts() {
+      const pillsContainer = document.getElementById('locationPillsContainer');
+      const tbody = document.getElementById('itemsTableBody');
+      const emptyState = document.getElementById('emptyVaultState');
+      tbody.innerHTML = '';
+
+      document.getElementById('statTotalItems').innerText = rawDecryptedItems.length;
+      document.getElementById('statTotalLocations').innerText = availableLocations.length;
+      document.getElementById('statTotalTypes').innerText = availableTypes.length;
+
+      const counts = { ALL: rawDecryptedItems.length };
+      availableLocations.forEach(loc => counts[loc] = 0);
+      rawDecryptedItems.forEach(item => {
+        if (counts[item.location] !== undefined) counts[item.location]++;
+        else counts[item.location] = 1;
+      });
+
+      let pillsHtml = `
+        <button onclick="setLocationFilter('ALL')" 
+          class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 ${activeLocationFilter === 'ALL' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20' : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800'}">
+          <span>All Branches</span>
+          <span class="${activeLocationFilter === 'ALL' ? 'bg-rose-950/80 text-rose-200' : 'bg-slate-950 text-slate-500'} px-1.5 py-0.2 rounded-md text-[10px] font-mono">${counts.ALL}</span>
+        </button>
+      `;
+
+      availableLocations.forEach(loc => {
+        const isSelected = activeLocationFilter.toLowerCase() === loc.toLowerCase();
+        pillsHtml += `
+          <button onclick="setLocationFilter('${escapeJs(loc)}')" 
+            class="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 shrink-0 ${isSelected ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20' : 'bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800'}">
+            <span>${escapeHtml(loc)}</span>
+            <span class="${isSelected ? 'bg-rose-950/80 text-rose-200' : 'bg-slate-950 text-slate-500'} px-1.5 py-0.2 rounded-md text-[10px] font-mono">${counts[loc] || 0}</span>
+          </button>
+        `;
+      });
+
+      if (currentUser && currentUser.role === 'admin') {
+        pillsHtml += `
+          <button onclick="promptAddNewLocation()" title="Add Branch Location" 
+            class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border border-dashed border-slate-800 text-rose-400 hover:text-white hover:border-rose-500 transition-all flex items-center gap-1 shrink-0 bg-slate-950/50">
+            ➕ Add
+          </button>
+        `;
+      }
+      pillsContainer.innerHTML = pillsHtml;
+
+      const filtered = rawDecryptedItems.filter(item => {
+        const matchesLocation = (activeLocationFilter === 'ALL') || (item.location.toLowerCase() === activeLocationFilter.toLowerCase());
+        if (!matchesLocation) return false;
+        if (!searchQuery) return true;
+        return (
+          item.title.toLowerCase().includes(searchQuery) ||
+          item.location.toLowerCase().includes(searchQuery) ||
+          item.item_type.toLowerCase().includes(searchQuery) ||
+          item.username.toLowerCase().includes(searchQuery) ||
+          item.notes.toLowerCase().includes(searchQuery)
+        );
+      });
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      const isAdmin = currentUser && currentUser.role === 'admin';
+
+      filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+        tr.innerHTML = `
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${getLocationBadge(item.location)}">
+              <span class="h-1.5 w-1.5 rounded-full bg-current opacity-75"></span>
+              ${escapeHtml(item.location)}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-mono font-semibold uppercase tracking-wider border ${getTypeBadge(item.item_type)}">
+              ${escapeHtml(item.item_type)}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <div class="font-semibold text-slate-100">${escapeHtml(item.title)}</div>
+            ${item.notes ? `<div class="text-[11px] text-emerald-400 font-mono mt-0.5">🌐 ${escapeHtml(item.notes)}</div>` : ''}
+          </td>
+          <td class="px-4 py-3 font-mono text-xs text-slate-300">${escapeHtml(item.username)}</td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2">
+              <input type="password" readonly value="${escapeHtml(item.secret)}" 
+                class="bg-slate-950 border border-slate-800/90 rounded-lg px-2.5 py-1 text-xs font-mono text-emerald-400 w-36 tracking-wider select-all" />
+              <button onclick="toggleSecret(this, '${item.id}')" title="Toggle Secret Visibility" class="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition">👁️</button>
+              <button onclick="copySecret('${escapeJs(item.secret)}', '${item.id}')" title="Copy Secret" class="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition">📋</button>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <button onclick="openViewSharesModal('${item.id}', '${escapeJs(item.title)}')" class="inline-flex items-center gap-1.5 text-xs text-rose-300 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 px-2.5 py-1 rounded-lg transition font-mono font-semibold shadow-sm" title="Click to view, edit, or delete shared persons">
+              👥 ${item.recipient_count} Person${item.recipient_count === 1 ? '' : 's'}
+            </button>
+          </td>
+          <td class="px-4 py-3 text-right space-x-1.5 whitespace-nowrap">
+            ${isAdmin ? `
+              <button onclick="openSharePasswordModal('${item.id}', '${escapeJs(item.title)}')" class="text-xs bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-semibold px-2.5 py-1.5 rounded-lg transition inline-flex items-center gap-1 shadow-sm">
+                💬 Share
+              </button>
+              <button onclick="openEditItemModal('${item.id}')" class="text-xs text-slate-400 hover:text-white hover:bg-slate-800 px-2 py-1.5 rounded-lg transition">Edit</button>
+              <button onclick="deleteVaultItem('${item.id}')" class="text-xs text-rose-400/80 hover:text-rose-300 hover:bg-rose-950/30 px-2 py-1.5 rounded-lg transition">Delete</button>
+            ` : `
+              <span class="inline-flex items-center gap-1 text-[11px] text-slate-500 font-mono">🔒 Read-Only</span>
+            `}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // CSV Export & Import Engine
+    function exportCredentialsToCsv() {
+      if (!rawDecryptedItems || rawDecryptedItems.length === 0) {
+        showToast('No credentials available to export', 'error');
+        return;
+      }
+
+      let csv = 'Asset Name,Location,Type,Host_IP,Username,Password,Shared_Persons_Count\n';
+
+      rawDecryptedItems.forEach(item => {
+        const title = `"${(item.title || '').replace(/"/g, '""')}"`;
+        const loc = `"${(item.location || '').replace(/"/g, '""')}"`;
+        const type = `"${(item.item_type || '').replace(/"/g, '""')}"`;
+        const ip = `"${(item.notes || '').replace(/"/g, '""')}"`;
+        const user = `"${(item.username || '').replace(/"/g, '""')}"`;
+        const pwd = `"${(item.secret || '').replace(/"/g, '""')}"`;
+        const shares = item.recipient_count || 0;
+
+        csv += `${title},${loc},${type},${ip},${user},${pwd},${shares}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `imperative_credentials_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      fetch(`${API_BASE}/logs/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+        body: JSON.stringify({ action: 'CSV_EXPORTED', details: { count: rawDecryptedItems.length } })
+      });
+
+      showToast(`Exported ${rawDecryptedItems.length} credentials to CSV!`);
+    }
+
+    function triggerCsvImport() {
+      document.getElementById('csvImportModal').classList.remove('hidden');
+    }
+
+    function downloadSampleCsv() {
+      const sample = 
+`Asset Name,Location,Type,Host_IP,Username,Password
+HQ Core Router,Pune,Router,192.168.1.1,admin,RouterPass@123
+Vashi Switch 01,Vashi,Switch,192.168.10.2,admin,SwitchSecret!456
+Thane CCTV NVR,Thane,CCTV NVR,192.168.20.50,operator,CctvSecure#890
+Chennai File Server,Chennai,Server,10.0.5.15,root,RootVaultKey$2026`;
+
+      const blob = new Blob([sample], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sample_credentials_template.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function parseCSV(text) {
+      const lines = [];
+      let row = [];
+      let inQuotes = false;
+      let curVal = '';
+
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        const next = text[i + 1];
+
+        if (c === '"') {
+          if (inQuotes && next === '"') {
+            curVal += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === ',' && !inQuotes) {
+          row.push(curVal.trim());
+          curVal = '';
+        } else if ((c === '\r' || c === '\n') && !inQuotes) {
+          if (c === '\r' && next === '\n') i++;
+          row.push(curVal.trim());
+          if (row.length > 1 || row[0] !== '') lines.push(row);
+          row = [];
+          curVal = '';
+        } else {
+          curVal += c;
+        }
+      }
+
+      if (curVal || row.length > 0) {
+        row.push(curVal.trim());
+        if (row.length > 1 || row[0] !== '') lines.push(row);
+      }
+      return lines;
+    }
+
+    async function handleCsvFileSelected(event) {
+      const file = event.target.files[0];
+      event.target.value = '';
+      closeModal('csvImportModal');
+
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const text = e.target.result;
+        const rows = parseCSV(text);
+
+        if (!rows || rows.length < 2) {
+          showToast('CSV file is empty or missing data rows', 'error');
+          return;
+        }
+
+        const header = rows[0].map(h => h.toLowerCase());
+        let titleIdx = 0, locIdx = 1, typeIdx = 2, ipIdx = 3, userIdx = 4, pwdIdx = 5;
+
+        header.forEach((h, idx) => {
+          if (h.includes('asset') || h.includes('name') || h.includes('title')) titleIdx = idx;
+          else if (h.includes('loc')) locIdx = idx;
+          else if (h.includes('type')) typeIdx = idx;
+          else if (h.includes('ip') || h.includes('host')) ipIdx = idx;
+          else if (h.includes('user')) userIdx = idx;
+          else if (h.includes('pass') || h.includes('secret')) pwdIdx = idx;
+        });
+
+        const dataRows = rows.slice(1);
+        showToast(`Processing & encrypting ${dataRows.length} items...`);
+
+        try {
+          const userRes = await fetch(`${API_BASE}/users/public-keys`, {
+            headers: { 'Authorization': `Bearer ${sessionToken}` }
+          });
+          const { users: allActiveUsers } = await userRes.json();
+
+          let successCount = 0;
+
+          for (const r of dataRows) {
+            const title = r[titleIdx] || 'Untitled Asset';
+            const location = r[locIdx] || 'Pune';
+            const type = r[typeIdx] || 'General';
+            const systemIp = r[ipIdx] || 'N/A';
+            const username = r[userIdx] || 'admin';
+            const secret = r[pwdIdx] || '';
+
+            if (!secret) continue;
+
+            const dekKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+            const rawDek = await crypto.subtle.exportKey('raw', dekKey);
+
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const payloadBytes = new TextEncoder().encode(JSON.stringify({ username, secret, notes: systemIp, location, type }));
+            const encBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, dekKey, payloadBytes);
+
+            const encBytes = new Uint8Array(encBuffer);
+            const cipherBytes = encBytes.slice(0, encBytes.length - 16);
+            const tagBytes = encBytes.slice(encBytes.length - 16);
+
+            const recipientKeys = [];
+            for (const u of allActiveUsers) {
+              try {
+                const pubKey = await crypto.subtle.importKey(
+                  'spki',
+                  pemToArrayBuffer(u.public_key),
+                  { name: 'RSA-OAEP', hash: 'SHA-256' },
+                  false,
+                  ['encrypt']
+                );
+                const wrappedDek = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pubKey, rawDek);
+                recipientKeys.push({
+                  user_id: u.id,
+                  encrypted_dek: bufToBase64(wrappedDek),
+                  permission: u.role === 'admin' ? 'admin' : 'read'
+                });
+              } catch (err) {}
+            }
+
+            const res = await fetch(`${API_BASE}/vault/items`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+              body: JSON.stringify({
+                title,
+                item_type: type,
+                location,
+                system_ip: systemIp,
+                encrypted_payload: bufToBase64(cipherBytes),
+                iv: bufToHex(iv),
+                auth_tag: bufToHex(tagBytes),
+                keys: recipientKeys,
+                time_span: 'Permanent'
+              })
+            });
+
+            if (res.ok) successCount++;
+          }
+
+          fetch(`${API_BASE}/logs/event`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+            body: JSON.stringify({ action: 'CSV_IMPORTED', details: { imported_count: successCount, total_rows: dataRows.length } })
+          });
+
+          showToast(`Successfully imported ${successCount} assets from CSV!`);
+          await loadVaultItems();
+        } catch (err) {
+          showToast('Import error: ' + err.message, 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ----------------------------------------------------
+    // SHARING & EDITING SHARED USERS (NEW)
+    // ----------------------------------------------------
+
+    function openSharePasswordModal(itemId, title) {
+      document.getElementById('shareTargetItemId').value = itemId;
+      document.getElementById('shareModalItemTitle').innerText = `Target Asset: ${title}`;
+      document.getElementById('recipientNameInput').value = '';
+      document.getElementById('recipientDeptInput').value = '';
+      document.getElementById('recipientPhoneInput').value = '';
+      document.getElementById('shareTimeSpanInput').value = 'Permanent';
+      document.getElementById('shareChannelInput').value = 'WhatsApp';
+      document.getElementById('sharePasswordModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('recipientNameInput').focus(), 100);
+    }
+
+    document.getElementById('sharePasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const itemId = document.getElementById('shareTargetItemId').value;
+      const recipientName = document.getElementById('recipientNameInput').value.trim();
+      const department = document.getElementById('recipientDeptInput').value.trim();
+      const phone = document.getElementById('recipientPhoneInput').value.trim();
+      const timeSpan = document.getElementById('shareTimeSpanInput').value;
+      const channel = document.getElementById('shareChannelInput').value;
+
+      const item = decryptedCache[itemId];
+      if (!item) {
+        showToast('Unable to load asset details', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('confirmShareBtn');
+      btn.disabled = true;
+      btn.innerText = 'Recording recipient...';
+
+      try {
+        const res = await fetch(`${API_BASE}/vault/items/${itemId}/log-share`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${sessionToken}`
+          },
+          body: JSON.stringify({
+            recipient_name: recipientName,
+            department: department,
+            phone_number: phone,
+            time_span: timeSpan,
+            share_channel: channel,
+            system_ip: item.notes || 'N/A'
+          })
+        });
+
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to record share event');
+
+        closeModal('sharePasswordModal');
+        showToast(`Recorded and shared with ${recipientName}!`);
+
+        const text = 
+`🏢 *IMPERATIVE BUSINESS VENTURES*
+*Infrastructure Asset Credential*
+
+👤 *Shared User:* ${recipientName} ${department ? `(${department})` : ''}
+⏳ *Access Window:* ${timeSpan === 'Permanent' ? 'Permanent' : timeSpan.replace('_', ' ').toUpperCase()}
+📍 *Location:* ${item.location}
+📌 *Target Asset:* ${item.title}
+🏷️ *Device Type:* ${item.item_type.toUpperCase()}
+🌐 *System IP/Host:* ${item.notes || 'N/A'}
+👤 *Username / ID:* ${item.username || 'N/A'}
+🔑 *Password / Key:* ${item.secret}`;
+
+        if (channel === 'WhatsApp') {
+          const waUrl = phone 
+            ? `https://api.whatsapp.com/send?phone=${encodeURIComponent(phone.replace(/[^0-9]/g, ''))}&text=${encodeURIComponent(text)}`
+            : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+          window.open(waUrl, '_blank');
+        }
+
+        await loadVaultItems();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>💬 Confirm & Share</span>';
+      }
+    });
+
+    // View All Shares History Modal
+    async function openViewSharesModal(itemId, title) {
+      document.getElementById('viewSharesItemTitle').innerText = `Target Asset: ${title}`;
+      const tbody = document.getElementById('viewSharesTableBody');
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-slate-400">Loading shared users...</td></tr>';
+      document.getElementById('viewSharesModal').classList.remove('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/vault/items/${itemId}/shares`, {
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        const { shares } = await res.json();
+        tbody.innerHTML = '';
+
+        if (!shares || shares.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500 font-medium">This credential has not been shared with anyone yet.</td></tr>';
+          return;
+        }
+
+        shares.forEach(s => {
+          let timeSpanBadge = `<span class="inline-flex px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400">${escapeHtml(s.time_span)}</span>`;
+          if (s.expires_at) {
+            const diff = new Date(s.expires_at).getTime() - new Date().getTime();
+            if (diff > 0) {
+              const hrs = Math.floor(diff / (1000 * 60 * 60));
+              const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              timeSpanBadge = `<span class="inline-flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">⏳ ${hrs}h ${mins}m</span>`;
+            } else {
+              timeSpanBadge = `<span class="inline-flex text-[10px] font-mono text-rose-400 bg-rose-500/10 px-1.5 py-0.5 rounded border border-rose-500/20">Expired</span>`;
+            }
+          }
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-900/60 transition';
+          tr.innerHTML = `
+            <td class="px-3.5 py-2.5 font-semibold text-rose-300">
+              👤 ${escapeHtml(s.recipient_name)}
+            </td>
+            <td class="px-3.5 py-2.5 text-slate-400">
+              <div>${escapeHtml(s.department || '—')}</div>
+              ${s.phone_number ? `<div class="font-mono text-[10px] text-slate-500">${escapeHtml(s.phone_number)}</div>` : ''}
+            </td>
+            <td class="px-3.5 py-2.5 whitespace-nowrap">
+              ${timeSpanBadge}
+            </td>
+            <td class="px-3.5 py-2.5 font-mono text-[10px] text-slate-400">${escapeHtml(s.share_channel)}</td>
+            <td class="px-3.5 py-2.5 text-slate-300 font-medium">${escapeHtml(s.shared_by_name || 'Admin')}</td>
+            <td class="px-3.5 py-2.5 text-right space-x-1.5 whitespace-nowrap">
+              <button onclick="openEditShareModal('${s.id}', '${escapeJs(s.recipient_name)}', '${escapeJs(s.department || '')}', '${escapeJs(s.phone_number || '')}', '${escapeJs(s.time_span)}', '${escapeJs(s.share_channel)}', '${itemId}', '${escapeJs(title)}')" class="text-xs text-rose-400 hover:text-rose-300 font-semibold px-1.5 py-0.5 bg-rose-500/10 hover:bg-rose-500/20 rounded transition">
+                ✏️ Edit User
+              </button>
+              <button onclick="deleteShareRecord('${s.id}', '${itemId}', '${escapeJs(title)}')" class="text-xs text-slate-400 hover:text-rose-400 font-medium px-1">
+                🗑️
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-rose-400">${err.message}</td></tr>`;
+      }
+    }
+
+    // Open Edit Shared User Modal
+    function openEditShareModal(recordId, name, dept, phone, timeSpan, channel, itemId, title) {
+      document.getElementById('editShareRecordId').value = recordId;
+      document.getElementById('editShareItemId').value = itemId;
+      document.getElementById('editShareRecipientName').value = name;
+      document.getElementById('editShareDept').value = dept;
+      document.getElementById('editSharePhone').value = phone;
+      document.getElementById('editShareTimeSpan').value = timeSpan || 'Permanent';
+      document.getElementById('editShareChannel').value = channel || 'WhatsApp';
+      document.getElementById('editSharePersonModal').classList.remove('hidden');
+    }
+
+    // Save Edited Shared User
+    document.getElementById('editSharePersonForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const recordId = document.getElementById('editShareRecordId').value;
+      const itemId = document.getElementById('editShareItemId').value;
+      const recipientName = document.getElementById('editShareRecipientName').value.trim();
+      const department = document.getElementById('editShareDept').value.trim();
+      const phone = document.getElementById('editSharePhone').value.trim();
+      const timeSpan = document.getElementById('editShareTimeSpan').value;
+      const channel = document.getElementById('editShareChannel').value;
+
+      const saveBtn = document.getElementById('saveEditShareBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Saving...';
+
+      try {
+        const res = await fetch(`${API_BASE}/vault/shares/${recordId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+          body: JSON.stringify({
+            recipient_name: recipientName,
+            department: department,
+            phone_number: phone,
+            time_span: timeSpan,
+            share_channel: channel
+          })
+        });
+
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to update shared user');
+
+        closeModal('editSharePersonModal');
+        showToast(`Shared user "${recipientName}" updated successfully!`);
+        await openViewSharesModal(itemId, document.getElementById('viewSharesItemTitle').innerText.replace('Target Asset: ', ''));
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = 'Save Shared User';
+      }
+    });
+
+    async function deleteShareRecord(recordId, itemId, title) {
+      if (!confirm('Are you sure you want to remove this shared user record?')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/vault/shares/${recordId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete record');
+
+        showToast('Shared user record deleted');
+        await openViewSharesModal(itemId, title);
+        await loadVaultItems();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // ----------------------------------------------------
+    // CLEAN AUDIT LOG PARSER
+    // ----------------------------------------------------
+
+    function parseLogDetails(raw) {
+      if (!raw || raw === '[object Object]') return '<span class="text-slate-500 italic">No extra metadata</span>';
+      let data = raw;
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          return `<span class="text-slate-300">${escapeHtml(data)}</span>`;
+        }
+      }
+
+      if (typeof data !== 'object' || data === null) {
+        return `<span class="text-slate-300">${escapeHtml(String(data))}</span>`;
+      }
+
+      const elements = [];
+
+      if (data.previous_user && data.updated_user) {
+        elements.push(`<span class="inline-flex items-center gap-1 font-semibold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">✏️ User: <b>${escapeHtml(data.previous_user.recipient)}</b> ➔ <b>${escapeHtml(data.updated_user.recipient)}</b></span>`);
+        if (data.updated_user.department && data.updated_user.department !== 'N/A') {
+          elements.push(`<span class="text-slate-400">Dept: ${escapeHtml(data.updated_user.department)}</span>`);
+        }
+        if (data.updated_user.time_span) {
+          elements.push(`<span class="text-amber-400 font-mono">Window: ${escapeHtml(data.updated_user.time_span)}</span>`);
+        }
+      } else if (data.shared_with) {
+        elements.push(`<span class="inline-flex items-center gap-1 font-semibold text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">👤 User: <b>${escapeHtml(data.shared_with)}</b></span>`);
+        if (data.department && data.department !== 'General') elements.push(`<span class="text-slate-400">Dept: ${escapeHtml(data.department)}</span>`);
+        if (data.validity) elements.push(`<span class="text-amber-400 font-mono">Window: ${escapeHtml(data.validity)}</span>`);
+        if (data.channel) elements.push(`<span class="text-emerald-400 font-mono text-[10px]">Via: ${escapeHtml(data.channel)}</span>`);
+      }
+
+      if (data.deleted_user) {
+        elements.push(`<span class="text-rose-400 font-semibold">Removed User: <b>${escapeHtml(data.deleted_user)}</b></span>`);
+      }
+      if (data.imported_count !== undefined) {
+        elements.push(`<span class="text-emerald-400 font-semibold font-mono">📥 Imported: ${data.imported_count} items</span>`);
+      }
+      if (data.count !== undefined && !data.imported_count) {
+        elements.push(`<span class="text-sky-300 font-semibold font-mono">Count: ${data.count} items</span>`);
+      }
+      if (data.system_ip && data.system_ip !== 'N/A') {
+        elements.push(`<span class="inline-flex items-center gap-1 font-mono text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">🌐 Host/IP: ${escapeHtml(data.system_ip)}</span>`);
+      }
+      if (data.location) {
+        elements.push(`<span class="text-slate-300 font-medium">📍 ${escapeHtml(data.location)}</span>`);
+      }
+      if (data.type) {
+        elements.push(`<span class="text-sky-300 uppercase font-mono text-[10px] font-semibold">${escapeHtml(data.type)}</span>`);
+      }
+      if (data.target) {
+        elements.push(`<span class="text-slate-200">Target: <b>${escapeHtml(data.target)}</b></span>`);
+      }
+      if (data.username) {
+        elements.push(`<span class="text-slate-400">Account: ${escapeHtml(data.username)}</span>`);
+      }
+      if (data.reason) {
+        elements.push(`<span class="text-rose-400 font-medium">Reason: ${escapeHtml(data.reason)}</span>`);
+      }
+
+      if (elements.length === 0) {
+        return Object.entries(data)
+          .map(([k, v]) => `<span class="text-slate-400">${k}: <b class="text-slate-200">${typeof v === 'object' ? JSON.stringify(v) : escapeHtml(String(v))}</b></span>`)
+          .join(' <span class="text-slate-600">|</span> ');
+      }
+
+      return elements.join(' <span class="text-slate-600">|</span> ');
+    }
+
+    async function loadAuditLogs() {
+      try {
+        const res = await fetch(`${API_BASE}/logs`, {
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        const { logs } = await res.json();
+        cachedAuditLogs = logs || [];
+        renderAuditLogs();
+      } catch (err) {
+        showToast('Error loading audit trail: ' + err.message, 'error');
+      }
+    }
+
+    function renderAuditLogs() {
+      const tbody = document.getElementById('logsTableBody');
+      tbody.innerHTML = '';
+      const filter = document.getElementById('logActionFilter').value;
+
+      const filtered = cachedAuditLogs.filter(log => {
+        if (filter === 'ALL') return true;
+        return log.action.includes(filter);
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-slate-500">No log entries found for this filter.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(l => {
+        const formattedIp = (!l.ip_address || l.ip_address === '::1' || l.ip_address === '127.0.0.1')
+          ? '127.0.0.1 (Localhost)'
+          : l.ip_address;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition font-mono text-[11px]';
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-slate-400 whitespace-nowrap">${new Date(l.timestamp).toLocaleString()}</td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${getLogBadge(l.action)}">
+              ${l.action}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-slate-200 font-sans font-medium whitespace-nowrap">${escapeHtml(l.operator_name || 'System')}</td>
+          <td class="px-4 py-3 text-rose-300 font-sans font-semibold whitespace-nowrap">${escapeHtml(l.target_item_title || l.item_id || '—')}</td>
+          <td class="px-4 py-3 text-slate-300 font-sans">
+            ${parseLogDetails(l.details)}
+          </td>
+          <td class="px-4 py-3 text-right text-slate-400 font-mono font-semibold whitespace-nowrap">
+            ${escapeHtml(formattedIp)}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportLogsToCsv() {
+      if (!cachedAuditLogs || cachedAuditLogs.length === 0) return showToast('No logs to export', 'error');
+      let csv = 'Timestamp,Action,Operator,Target,Details,IP_Address\n';
+      cachedAuditLogs.forEach(l => {
+        let cleanDetail = l.details;
+        if (typeof cleanDetail === 'object') cleanDetail = JSON.stringify(cleanDetail);
+        csv += `"${l.timestamp}","${l.action}","${l.operator_name || ''}","${l.target_item_title || ''}","${(cleanDetail || '').replace(/"/g, '""')}","${l.ip_address || '127.0.0.1'}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `imperative_audit_logs_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Audit trail exported to CSV');
+    }
+
+    function getLogBadge(action) {
+      if (action.includes('SHARED_USER_UPDATED')) return 'bg-amber-500/20 text-amber-200 border border-amber-500/30';
+      if (action.includes('PASSWORD_SHARED')) return 'bg-rose-500/20 text-rose-200 border border-rose-500/30';
+      if (action.includes('CSV_EXPORTED') || action.includes('CSV_IMPORTED')) return 'bg-purple-500/20 text-purple-300 border border-purple-500/30';
+      if (action.includes('LOGIN') || action.includes('AUTH')) return 'bg-sky-500/10 text-sky-300 border border-sky-500/20';
+      if (action.includes('CREATED')) return 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20';
+      if (action.includes('UPDATED')) return 'bg-amber-500/10 text-amber-300 border border-amber-500/20';
+      if (action.includes('DELETED')) return 'bg-rose-500/10 text-rose-300 border border-rose-500/20';
+      return 'bg-slate-800 text-slate-300 border border-slate-700';
+    }
+
+    async function toggleSecret(btn, itemId) {
+      const input = btn.previousElementSibling;
+      const isRevealing = input.type === 'password';
+      input.type = isRevealing ? 'text' : 'password';
+      if (isRevealing) {
+        fetch(`${API_BASE}/logs/event`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+          body: JSON.stringify({ action: 'PASSWORD_REVEALED', item_id: itemId })
+        });
+      }
+    }
+
+    async function copySecret(val, itemId) {
+      navigator.clipboard.writeText(val);
+      showToast('Password copied to clipboard!');
+      fetch(`${API_BASE}/logs/event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+        body: JSON.stringify({ action: 'PASSWORD_COPIED', item_id: itemId })
+      });
+    }
+
+    async function syncVaultToAllUsers(silent = false) {
+      if (!currentUser || currentUser.role !== 'admin') return;
+
+      try {
+        const res = await fetch(`${API_BASE}/vault/missing-access`, {
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        const { missing } = await res.json();
+
+        if (!missing || missing.length === 0) {
+          if (!silent) showToast('All assets are fully synchronized with team members');
+          return;
+        }
+
+        const assignments = [];
+        for (const m of missing) {
+          const cached = decryptedCache[m.vault_item_id];
+          if (cached && cached.rawDekBytes) {
+            try {
+              const recipientPubKey = await crypto.subtle.importKey(
+                'spki',
+                pemToArrayBuffer(m.public_key),
+                { name: 'RSA-OAEP', hash: 'SHA-256' },
+                false,
+                ['encrypt']
+              );
+
+              const wrappedDek = await crypto.subtle.encrypt(
+                { name: 'RSA-OAEP' },
+                recipientPubKey,
+                cached.rawDekBytes
+              );
+
+              assignments.push({
+                vault_item_id: m.vault_item_id,
+                user_id: m.user_id,
+                encrypted_dek: bufToBase64(wrappedDek),
+                permission: m.role === 'admin' ? 'admin' : 'read'
+              });
+            } catch (err) {}
+          }
+        }
+
+        if (assignments.length > 0) {
+          const syncRes = await fetch(`${API_BASE}/vault/batch-assign-keys`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+            body: JSON.stringify({ assignments })
+          });
+          if (syncRes.ok && !silent) showToast(`Synchronized ${assignments.length} assets to team members`);
+        }
+      } catch (err) {
+        if (!silent) showToast('Sync error: ' + err.message, 'error');
+      }
+    }
+
+    // Modal Form Submissions
+    document.getElementById('openNewItemModalBtn').addEventListener('click', () => {
+      document.getElementById('editItemTargetId').value = '';
+      document.getElementById('itemModalTitle').innerText = 'Add Infrastructure Asset';
+      document.getElementById('itemForm').reset();
+      renderLocationDropdown(activeLocationFilter !== 'ALL' ? activeLocationFilter : null);
+      renderTypeDropdown();
+      document.getElementById('itemModal').classList.remove('hidden');
+    });
+
+    function openEditItemModal(itemId) {
+      const item = decryptedCache[itemId];
+      if (!item) return;
+
+      document.getElementById('editItemTargetId').value = itemId;
+      document.getElementById('itemModalTitle').innerText = 'Edit Infrastructure Asset';
+      renderLocationDropdown(item.location);
+      renderTypeDropdown(item.item_type);
+      document.getElementById('itemTitleInput').value = item.title;
+      document.getElementById('itemUserInput').value = item.username;
+      document.getElementById('itemSecretInput').value = item.secret;
+      document.getElementById('itemNotesInput').value = item.notes || '';
+      document.getElementById('itemModal').classList.remove('hidden');
+    }
+
+    document.getElementById('itemForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveItemBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Saving Asset...';
+
+      const editId = document.getElementById('editItemTargetId').value;
+      const location = document.getElementById('itemLocationInput').value;
+      const type = document.getElementById('itemTypeInput').value;
+      const title = document.getElementById('itemTitleInput').value;
+      const systemIp = document.getElementById('itemNotesInput').value.trim();
+      const username = document.getElementById('itemUserInput').value;
+      const secret = document.getElementById('itemSecretInput').value;
+
+      try {
+        const userRes = await fetch(`${API_BASE}/users/public-keys`, {
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        const { users: allActiveUsers } = await userRes.json();
+
+        const dekKey = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const rawDek = await crypto.subtle.exportKey('raw', dekKey);
+
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const payloadBytes = new TextEncoder().encode(JSON.stringify({ username, secret, notes: systemIp, location, type }));
+        const encBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, dekKey, payloadBytes);
+
+        const encBytes = new Uint8Array(encBuffer);
+        const cipherBytes = encBytes.slice(0, encBytes.length - 16);
+        const tagBytes = encBytes.slice(encBytes.length - 16);
+
+        const recipientKeys = [];
+        for (const u of allActiveUsers) {
+          try {
+            const pubKey = await crypto.subtle.importKey(
+              'spki',
+              pemToArrayBuffer(u.public_key),
+              { name: 'RSA-OAEP', hash: 'SHA-256' },
+              false,
+              ['encrypt']
+            );
+            const wrappedDek = await crypto.subtle.encrypt({ name: 'RSA-OAEP' }, pubKey, rawDek);
+            recipientKeys.push({
+              user_id: u.id,
+              encrypted_dek: bufToBase64(wrappedDek),
+              permission: u.role === 'admin' ? 'admin' : 'read'
+            });
+          } catch (err) {}
+        }
+
+        const url = editId ? `${API_BASE}/vault/items/${editId}` : `${API_BASE}/vault/items`;
+        const method = editId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+          body: JSON.stringify({
+            title,
+            item_type: type,
+            location: location,
+            system_ip: systemIp,
+            encrypted_payload: bufToBase64(cipherBytes),
+            iv: bufToHex(iv),
+            auth_tag: bufToHex(tagBytes),
+            keys: recipientKeys
+          })
+        });
+
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}));
+          throw new Error(errJson.error || `Server error HTTP ${res.status}`);
+        }
+
+        closeModal('itemModal');
+        document.getElementById('itemForm').reset();
+        showToast(editId ? 'Asset updated successfully' : 'New asset saved and assigned to team');
+        await loadVaultItems();
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = 'Save Asset';
+      }
+    });
+
+    async function deleteVaultItem(id) {
+      if (!confirm('Are you sure you want to delete this asset?')) return;
+      try {
+        const res = await fetch(`${API_BASE}/vault/items/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to delete asset');
+        showToast('Asset removed from portal');
+        await loadVaultItems();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    // User Provisioning
+    async function loadUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+      try {
+        const res = await fetch(`${API_BASE}/users`, {
+          headers: { 'Authorization': `Bearer ${sessionToken}` }
+        });
+        const { users } = await res.json();
+
+        for (const u of users) {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-800/40 transition';
+          tr.innerHTML = `
+            <td class="px-4 py-3.5 font-semibold text-slate-100 flex items-center gap-2">
+              <div class="h-6 w-6 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] text-rose-400 font-bold">
+                ${u.username.charAt(0).toUpperCase()}
+              </div>
+              ${escapeHtml(u.username)}
+            </td>
+            <td class="px-4 py-3.5 text-slate-400 font-mono text-xs">${escapeHtml(u.email)}</td>
+            <td class="px-4 py-3.5">
+              <span class="inline-flex px-2 py-0.5 rounded text-[10px] uppercase font-mono font-semibold ${u.role === 'admin' ? 'bg-rose-500/10 text-rose-300 border border-rose-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                ${u.role}
+              </span>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="inline-flex items-center gap-1 text-[11px] font-medium ${u.is_active ? 'text-emerald-400' : 'text-rose-400'}">
+                <span class="h-1.5 w-1.5 rounded-full ${u.is_active ? 'bg-emerald-400' : 'bg-rose-400'}"></span>
+                ${u.is_active ? 'Active' : 'Deactivated'}
+              </span>
+            </td>
+            <td class="px-4 py-3.5 text-right space-x-1.5">
+              <button onclick="openEditUser('${u.id}', '${u.role}', ${u.is_active})" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">Edit</button>
+              ${u.id !== currentUser.id ? `<button onclick="deleteUser('${u.id}')" class="text-xs text-rose-400 hover:text-rose-300 px-2 py-1 rounded transition">Revoke</button>` : ''}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      } catch (err) {
+        showToast('Error loading members: ' + err.message, 'error');
+      }
+    }
+
+    document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saveBtn = document.getElementById('saveUserBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerText = 'Creating Member...';
+
+      const username = document.getElementById('newUsername').value;
+      const email = document.getElementById('newUserEmail').value;
+      const password = document.getElementById('newUserPassword').value;
+      const role = document.getElementById('newUserRole').value;
+
+      try {
+        const keyPair = await crypto.subtle.generateKey(
+          { name: 'RSA-OAEP', modulusLength: 4096, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' },
+          true,
+          ['encrypt', 'decrypt']
+        );
+
+        const exportedSpki = await crypto.subtle.exportKey('spki', keyPair.publicKey);
+        const exportedPkcs8 = await crypto.subtle.exportKey('pkcs8', keyPair.privateKey);
+
+        const publicKeyPem = arrayBufferToPem(exportedSpki, 'PUBLIC KEY');
+        const privateKeyPem = arrayBufferToPem(exportedPkcs8, 'PRIVATE KEY');
+
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const aesKey = await deriveAesGcmKey(password, salt);
+
+        const encBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, aesKey, new TextEncoder().encode(privateKeyPem));
+        const encBytes = new Uint8Array(encBuf);
+        const cipherB64 = bufToBase64(encBytes.slice(0, encBytes.length - 16));
+        const tagB64 = bufToBase64(encBytes.slice(encBytes.length - 16));
+
+        const res = await fetch(`${API_BASE}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${sessionToken}` },
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+            role,
+            public_key: publicKeyPem,
+            encrypted_private_key: `${cipherB64}:${tagB64}`,
+            private_key_iv: bufToHex(iv),
+            salt: bufToHex(salt)
+          })
+        });
+
+        const userData = await res.json();
+        if (!res.ok) throw new Error(userData.error || 'Failed to create user');
+
+        closeModal('userModal');
+        document.getElementById('addUserForm').reset();
+        await loadUsers();
+        await syncVaultToAllUsers(true);
+        showToast(`Member "${username}" created`);
+      } catch (err) {
+        showToast(err.message, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerText = 'Create Member';
+      }
+    });
+
+    // Navigation and Tab Switching
+    function openEditUser(id, role, status) {
+      document.getElementById('editUserId').value = id;
+      document.getElementById('editUserRole').value = role;
+      document.getElementById('editUserStatus').value = status ? '1' : '0';
+      document.getElementById('editUserModal').classList.remove('hidden');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    document.getElementById('openNewUserModalBtn').addEventListener('click', () => {
+      document.getElementById('userModal').classList.remove('hidden');
+    });
+
+    document.getElementById('tabVaultBtn').addEventListener('click', () => {
+      document.getElementById('vaultSection').classList.remove('hidden');
+      document.getElementById('logsSection').classList.add('hidden');
+      document.getElementById('usersSection').classList.add('hidden');
+      setTabStyle('tabVaultBtn');
+    });
+
+    document.getElementById('tabLogsBtn').addEventListener('click', () => {
+      document.getElementById('vaultSection').classList.add('hidden');
+      document.getElementById('logsSection').classList.remove('hidden');
+      document.getElementById('usersSection').classList.add('hidden');
+      setTabStyle('tabLogsBtn');
+      loadAuditLogs();
+    });
+
+    document.getElementById('tabUsersBtn').addEventListener('click', () => {
+      document.getElementById('vaultSection').classList.add('hidden');
+      document.getElementById('logsSection').classList.add('hidden');
+      document.getElementById('usersSection').classList.remove('hidden');
+      setTabStyle('tabUsersBtn');
+      loadUsers();
+    });
+
+    function setTabStyle(activeTabId) {
+      ['tabVaultBtn', 'tabLogsBtn', 'tabUsersBtn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (id === activeTabId) {
+          btn.className = 'px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-rose-600 text-white shadow-sm transition';
+        } else {
+          btn.className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition';
+        }
+      });
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      if (!document.getElementById('vaultSection').classList.contains('hidden')) loadVaultItems();
+      else if (!document.getElementById('logsSection').classList.contains('hidden')) loadAuditLogs();
+      else loadUsers();
+      showToast('Portal refreshed');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      sessionToken = null;
+      userPrivateKey = null;
+      rawDecryptedItems = [];
+      decryptedCache = {};
+      window.location.reload();
+    });
+
+    function getLocationBadge(location) {
+      const colors = [
+        'bg-rose-500/10 text-rose-300 border-rose-500/20',
+        'bg-amber-500/10 text-amber-300 border-amber-500/20',
+        'bg-orange-500/10 text-orange-300 border-orange-500/20',
+        'bg-purple-500/10 text-purple-300 border-purple-500/20',
+        'bg-cyan-500/10 text-cyan-300 border-cyan-500/20',
+        'bg-emerald-500/10 text-emerald-300 border-emerald-500/20',
+        'bg-sky-500/10 text-sky-300 border-sky-500/20',
+      ];
+      if (!location) return colors[0];
+      let hash = 0;
+      for (let i = 0; i < location.length; i++) hash = location.charCodeAt(i) + ((hash << 5) - hash);
+      return colors[Math.abs(hash) % colors.length];
+    }
+
+    function getTypeBadge(type) {
+      const lower = (type || '').toLowerCase();
+      if (lower.includes('firewall') || lower.includes('security')) return 'bg-rose-500/10 text-rose-300 border-rose-500/20';
+      if (lower.includes('router') || lower.includes('switch')) return 'bg-sky-500/10 text-sky-300 border-sky-500/20';
+      if (lower.includes('server') || lower.includes('linux')) return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
+      if (lower.includes('wifi')) return 'bg-teal-500/10 text-teal-300 border-teal-500/20';
+      if (lower.includes('cctv') || lower.includes('nvr') || lower.includes('camera')) return 'bg-amber-500/10 text-amber-300 border-amber-500/20';
+      return 'bg-slate-800 text-slate-300 border border-slate-700';
+    }
+
+    function escapeHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    function escapeJs(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+  </script>
+</body>
+</html>
