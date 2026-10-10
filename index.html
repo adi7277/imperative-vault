@@ -87,7 +87,7 @@
       <form id="loginForm" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1.5">Corporate Username</label>
-          <input id="usernameInput" type="text" required value="admin"
+          <input id="usernameInput" type="text" required value=""
             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition" />
         </div>
         <div>
@@ -595,7 +595,15 @@
 
   <!-- JAVASCRIPT APPLICATION LOGIC -->
   <script>
-    const API_BASE = (window.location.origin && window.location.origin !== 'null' && !window.location.protocol.startsWith('file'))
+    // Define your backend URL (replace with your actual Render service URL)
+const API_BASE = 'https://imperative-vault.onrender.com';
+
+// Update your fetch calls to use API_BASE:
+fetch(`${API_BASE}/api/v1/auth/login`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username, master_password })
+})
       ? window.location.origin + '/api/v1'
       : 'http://localhost:3000/api/v1';
 

@@ -1,13 +1,19 @@
 const crypto = require('crypto');
 const mysql = require('mysql2/promise');
 const argon2 = require('argon2');
+const adminId = crypto.randomUUID();
 
 async function seed() {
   const pool = mysql.createPool({
-    host: '127.0.0.1',
-    user: 'vault_admin',
-    password: 'admin',
-    database: 'vault_db'
+    host: 'gateway01.ap-northeast-1.prod.aws.tidbcloud.com',         // e.g., gateway01.ap-south-1.prod.aws.tidbcloud.com
+    port: 4000,
+    user: 'd6FegwjjMcMH3Bp.root',         // e.g., d6FegwjjMcMH3Bp.root
+    password: '788Nwqqs0JKCvpuJ', // Your TiDB password
+    database: 'vault_db',
+    ssl: {
+      minVersion: 'TLSv1.2',
+      rejectUnauthorized: true
+    }
   });
 
   const username = 'admin';
