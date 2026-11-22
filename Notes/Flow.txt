@@ -1,0 +1,10 @@
+Password Manager/
+├── package.json
+├── .env
+├── schema.sql
+├── seed-admin.js
+├── server.js
+├── index.html
+├── capacitor.config.json
+└── www/
+    └── index.html   (copied from root index.html during Capacitor sync)
